@@ -22,8 +22,10 @@ TOKEN = os.path.join(HERE, "token.json")
 if not os.path.exists(CREDS):
     raise SystemExit("credentials.json not found — download it from Google Cloud Console first (see docstring)")
 
+# Fixed port: this redirect URI must be registered on the OAuth client in
+# Google Cloud Console (web-type client): http://localhost:8765/
 flow = InstalledAppFlow.from_client_secrets_file(CREDS, SCOPES)
-creds = flow.run_local_server(port=0)
+creds = flow.run_local_server(port=8765)
 with open(TOKEN, "w") as f:
     f.write(creds.to_json())
 print(f"Success! token.json saved to {TOKEN}")

@@ -1,0 +1,4 @@
+OPEN THIS URL:
+https://accounts.google.com/o/oauth2/auth?response_type=code&client_id=192916148084-ofpr661ogvb4lco0ndqnkv3ie8egd0mh.apps.googleusercontent.com&redirect_uri=http%3A%2F%2Flocalhost%3A8765%2F&scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fcalendar&state=dPAbBcBwv2TdanZZy7cKN24AdgO9Zv&code_challenge=k_PtAh0bHjsDGwN24FC6bMCn4KpXhkxWNlYCBpl2DUM&code_challenge_method=S256&access_type=offline
+
+TOKEN SAVED
