@@ -1,0 +1,13 @@
+.env
+__pycache__/
+*.pyc
+*.pyo
+*.wav
+*.mp3
+*.safetensors
+adapter/
+node_modules/
+.next/
+*.egg-info/
+dist/
+build/

@@ -1,0 +1,71 @@
+import os
+import smtplib
+import logging
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+from dotenv import load_dotenv
+
+load_dotenv()
+logger = logging.getLogger(__name__)
+
+GMAIL_USER = os.getenv("GMAIL_USER")
+GMAIL_APP_PASSWORD = (os.getenv("GMAIL_APP_PASSWORD") or "").replace(" ", "")
+MEET_LINK = os.getenv("MEET_LINK", "https://meet.google.com/byn-mezv-ddv")
+CALENDLY_LINK = os.getenv("CALENDLY_LINK", "")
+
+
+def send_meeting_confirmation(lead_name: str, lead_email: str, meeting_time: str, notify_email: str) -> bool:
+    if not GMAIL_USER or not GMAIL_APP_PASSWORD:
+        logger.warning("Gmail credentials not set — skipping email")
+        return False
+    try:
+        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
+            server.login(GMAIL_USER, GMAIL_APP_PASSWORD)
+
+            lead_msg = MIMEMultipart("alternative")
+            lead_msg["Subject"] = "Your Karta Demo is Confirmed!"
+            lead_msg["From"] = GMAIL_USER
+            lead_msg["To"] = lead_email
+            lead_html = f"""
+            <div style="font-family:sans-serif;max-width:520px;margin:auto;padding:32px;background:#f9f9f9;border-radius:12px;">
+              <div style="background:linear-gradient(135deg,#6366f1,#8b5cf6);padding:20px 24px;border-radius:8px;margin-bottom:24px;">
+                <h2 style="color:#fff;margin:0;">Your Demo is Confirmed ✅</h2>
+              </div>
+              <p style="color:#333;font-size:16px;">Hi <strong>{lead_name}</strong>,</p>
+              <p style="color:#555;">Thank you for speaking with <strong>Aria</strong> from Karta!</p>
+              <div style="background:#fff;border:1px solid #e5e7eb;border-radius:8px;padding:20px;margin:20px 0;">
+                <p style="margin:0;color:#6366f1;font-weight:700;font-size:14px;text-transform:uppercase;">Meeting Details</p>
+                <p style="font-size:22px;font-weight:700;color:#1e1e35;margin:8px 0;">{meeting_time}</p>
+                <a href="{MEET_LINK}" style="display:inline-block;margin-top:12px;background:#6366f1;color:#fff;text-decoration:none;padding:12px 24px;border-radius:8px;font-weight:700;">Join Google Meet</a>
+              </div>
+              {f'''<div style="background:#fff;border:1px solid #e5e7eb;border-radius:8px;padding:20px;margin:20px 0;">
+                <p style="margin:0 0 8px;color:#555;">Need a different time? Pick any slot that works for you:</p>
+                <a href="{CALENDLY_LINK}" style="display:inline-block;background:#fff;color:#6366f1;border:2px solid #6366f1;text-decoration:none;padding:10px 22px;border-radius:8px;font-weight:700;">Reschedule on Calendly</a>
+              </div>''' if CALENDLY_LINK else ''}
+              <p style="color:#999;font-size:12px;margin-top:32px;">— Aria, Karta AI Agent</p>
+            </div>
+            """
+            lead_msg.attach(MIMEText(lead_html, "html"))
+            server.sendmail(GMAIL_USER, lead_email, lead_msg.as_string())
+
+            notif_msg = MIMEMultipart("alternative")
+            notif_msg["Subject"] = f"New Demo Booked — {lead_name} ({meeting_time})"
+            notif_msg["From"] = GMAIL_USER
+            notif_msg["To"] = notify_email
+            notif_html = f"""
+            <div style="font-family:sans-serif;max-width:520px;margin:auto;padding:32px;">
+              <h2>New Demo Booked</h2>
+              <p><b>Name:</b> {lead_name}</p>
+              <p><b>Email:</b> {lead_email}</p>
+              <p><b>Meeting:</b> {meeting_time}</p>
+              <p><b>Meet Link:</b> <a href="{MEET_LINK}">{MEET_LINK}</a></p>
+              {f'<p><b>Calendly:</b> <a href="{CALENDLY_LINK}">{CALENDLY_LINK}</a></p>' if CALENDLY_LINK else ''}
+            </div>
+            """
+            notif_msg.attach(MIMEText(notif_html, "html"))
+            server.sendmail(GMAIL_USER, notify_email, notif_msg.as_string())
+
+        return True
+    except Exception as e:
+        logger.error(f"Email send failed: {e}")
+        return False

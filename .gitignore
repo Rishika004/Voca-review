@@ -1,0 +1,13 @@
+# secrets — NEVER commit
+**/.env
+**/token.json
+**/credentials.json
+
+# python
+__pycache__/
+*.pyc
+.venv/
+
+# node
+node_modules/
+.next/

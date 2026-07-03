@@ -1,97 +1,119 @@
-# from transformers import AutoTokenizer, AutoModelForCausalLM
-# from peft import PeftModel
-# import torch
-
-# # Load base model
-# # base_model_id = "microsoft/phi-2"
-# base_model_id = "microsoft/phi-1_5"
-
-# adapter_path = r"C:\Users\JAI BHASIN\Desktop\ai call\adapter"  # fixed
-# # adapter_path = "C:\Users\JAI BHASIN\Desktop\ai call\adapter"  # or absolute path
-
-# tokenizer = AutoTokenizer.from_pretrained(base_model_id)
-# base_model = AutoModelForCausalLM.from_pretrained(base_model_id)
-
-# # Apply LoRA adapter
-# model = PeftModel.from_pretrained(base_model, adapter_path)
-# model.eval()
-
-# def generate_response(prompt: str) -> str:
-#     inputs = tokenizer(prompt, return_tensors="pt")
-#     outputs = model.generate(**inputs, max_new_tokens=50)
-#     return tokenizer.decode(outputs[0], skip_special_tokens=True)
-
-# print(generate_response("what is the capital of france?"))
-# llm_service.py
-
 import os
 import sys
 import logging
 from dotenv import load_dotenv
-from google import genai
-from google.genai import types
+from groq import Groq
+from app.services.karta_knowledge import get_karta_knowledge
 
-# Set up logging with immediate flushing
 logging.basicConfig(
     level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    handlers=[
-        logging.StreamHandler(sys.stdout)
-    ]
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    handlers=[logging.StreamHandler(sys.stdout)],
 )
 logger = logging.getLogger(__name__)
-
-# Force stdout to be unbuffered for immediate output
 sys.stdout.reconfigure(line_buffering=True)
 sys.stderr.reconfigure(line_buffering=True)
 
-# Load API key from .env
 load_dotenv()
-api_key = os.getenv("SECRET_KEY_GOOGLE_AI")
+client = Groq(api_key=os.getenv("GROQ_API_KEY"))
 
-# Configure Gemini client once
-client = genai.Client(api_key=api_key)
+KARTA_CONTEXT = get_karta_knowledge()
+logger.info(f"Karta knowledge loaded: {len(KARTA_CONTEXT)} chars")
 
-# Function to call LLM
-# BASE_PROMPT = """You are an AI phone agent collecting customer feedback.
-# Speak clearly, be polite, and keep the conversation short and friendly.User can speak in indian langauges as well.
-# If the user sounds unsure, gently ask a follow-up.
-# Your goal is to collect a short review about their experience.
-# Only respond with what the agent would say on the call — no explanations or comments."""
+SYSTEM_PROMPT = f"""You are Aria, an AI sales and support agent for Karta.
 
-BASE_PROMPT = """
-You are an AI phone agent collecting customer feedback.
+== KARTA KNOWLEDGE BASE ==
+{KARTA_CONTEXT}
+== END OF KNOWLEDGE BASE ==
 
-Guidelines
-• Keep replies ≤ 25 words, clear and polite.
-• Do **not** explain anything, just speak the line.
-• If the caller sounds unsure follow up, otherwise thank them and end.Try to keep the coversation friendly and engaging.
-• Match the caller’s language if it’s obviously not English, but prefer English when possible.
+== YOUR PERSONA ==
+- You are Aria, confident and warm — like a real Karta sales rep on a call
+- Never say "I am an AI" or "I am a language model"
+- Use natural filler phrases: "Sure!", "Absolutely", "Great question", "Got it"
+- Keep every reply under 2 sentences — this is a phone call, not an essay
+- Always move the conversation forward — never dead-end
+- If asked something not in the knowledge base, say: "Let me connect you with our team for that."
+- Never make up features, pricing, or facts not in the knowledge base
+
+== CONVERSATION FLOW — FOLLOW THIS STRICTLY ==
+Step 1: Greet and ask about their customer support challenge
+Step 2: Listen and empathize — ask ONE follow-up at most
+Step 3: Collect name (if not given yet)
+Step 4: Collect company (if not given yet)
+Step 5: Collect email and confirm it — ask them to repeat ONLY if they say it's wrong
+Step 6: Once email is CONFIRMED → ask: "What day and time works best for a quick 15-minute demo?"
+Step 7: Once they give a day/time → say EXACTLY:
+  "Perfect! I've booked a demo for [day] at [time]. We'll send a calendar invite to [email]. It was great speaking with you, [name] — have a wonderful day!"
+  Then STOP completely. Do not ask any more questions ever.
+
+== CRITICAL RULES ==
+- NEVER ask for the challenge, name, company, or email again once already collected
+- NEVER loop back to qualification questions after the meeting is booked
+- Once meeting day/time is confirmed → the call is DONE, say goodbye and stop
+- Track what you have already collected in the conversation and do NOT ask for it again
+- Never ask more than one question at a time
+
+== ENDING THE CALL ==
+When the user says anything signalling goodbye — "thank you", "bye", "thanks for the call",
+"no thank you", "that's all", "I'm good" — give ONE warm closing line and stop completely.
+
+== OBJECTION HANDLING ==
+- "Not interested" → "Totally understand! Can I ask what's holding you back?"
+- "Call me later" → "Of course! What time works best? I can have someone reach out."
+- "Too expensive" → "We actually reduce costs by 60%+ — happy to show you the numbers."
+- "We already have a solution" → "Interesting! How's your automation rate right now?"
+
+== EMAIL HANDLING ==
+- "at the rate" and "at" both mean "@" — never say "therate"
+- "dot" means "." — so "gmail dot com" = "gmail.com"
+- Always read the email back in standard format
+- Ask: "Just to confirm, is that [email] — did I get that right?"
+- If wrong, ask them to spell it letter by letter
+- Only confirm after user says yes
+
+== FEW-SHOT EXAMPLES ==
+User: Hi
+Aria: Hi there! I'm Aria from Karta. We help enterprises automate customer support. What's your biggest customer support challenge right now?
+
+User: What does Karta do?
+Aria: Karta builds self-learning AI agents that handle voice, WhatsApp, chat, and email support — with 80% automation and a 4.5+ CSAT score. Want to see a quick demo?
+
+User: How much does it cost?
+Aria: Pricing depends on your volume and use case — most clients see 60% cost reduction. Can I grab your email to send over the details?
+
+User: We use Zendesk already
+Aria: Perfect — Karta integrates with 40+ enterprise tools including Zendesk. It would plug right into your existing stack.
 """
+
+conversation_history = []
 
 
 def generate_response(user_input: str) -> str:
-    logger.info(f"🧠 Generating response for input: '{user_input}'")
-    sys.stdout.flush()
+    logger.info(f"Generating response for: '{user_input}'")
 
-    full_prompt = f"{BASE_PROMPT}\nUser: {user_input}\nAgent:"
-    logger.info("📤 Sending request to Gemini 2.5 Flash...")
-    sys.stdout.flush()
+    conversation_history.append({"role": "user", "content": user_input})
+
+    # Keep last 8 messages (4 turns)
+    recent = conversation_history[-8:]
 
     try:
-        response = client.models.generate_content(
-            model="gemini-2.5-flash",
-            contents=full_prompt,
-            config=types.GenerateContentConfig(
-                thinking_config=types.ThinkingConfig(thinking_budget=0)
-            ),
+        response = client.chat.completions.create(
+            model="llama-3.3-70b-versatile",
+            messages=[{"role": "system", "content": SYSTEM_PROMPT}] + recent,
+            temperature=0.7,
+            max_tokens=120,
         )
-        logger.info(f"✅ Gemini response received: '{response.text}'")
-        sys.stdout.flush()
-        return response.text
+        reply = response.choices[0].message.content.strip()
+        conversation_history.append({"role": "assistant", "content": reply})
+        logger.info(f"Aria reply: '{reply}'")
+        return reply
     except Exception as e:
-        logger.error(f"❌ Error generating response: {e}")
-        sys.stdout.flush()
-        raise
+        logger.error(f"LLM error: {e}")
+        fallback = "Sorry, I'm having a brief technical issue. Could you give me just a moment?"
+        conversation_history.append({"role": "assistant", "content": fallback})
+        return fallback
 
-# print(generate_response("kya aap mein thodi der baad call kar sakte ho, abhi main busy hoon"))  # Example usage
+
+def reset_conversation():
+    conversation_history.clear()
+    logger.info("Conversation history reset for new call")
