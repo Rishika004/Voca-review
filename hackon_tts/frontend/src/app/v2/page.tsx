@@ -182,7 +182,7 @@ export default function V2Page() {
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
           <div style={{ width: 34, height: 34, borderRadius: "50%", background: "linear-gradient(135deg,#6366f1,#8b5cf6)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: 16 }}>K</div>
           <div>
-            <div style={{ fontWeight: 700, fontSize: 16, color: "#fff" }}>Aria <span style={{ color: "#6366f1", fontSize: 12, fontWeight: 400 }}>v2 · LiveKit</span></div>
+            <div style={{ fontWeight: 700, fontSize: 16, color: "#fff" }}>Aria <span style={{ color: "#6366f1", fontSize: 12, fontWeight: 400 }}>v2</span></div>
             <div style={{ fontSize: 11, color: "#475569" }}>Karta AI Sales Agent</div>
           </div>
         </div>
@@ -216,7 +216,7 @@ export default function V2Page() {
               <div style={{ fontWeight: 700, fontSize: 18, color: "#fff" }}>Aria</div>
               <div style={{ fontSize: 13, color: "#64748b", marginTop: 4 }}>
                 {status === "idle" && "Ready to connect"}
-                {status === "connecting" && "Connecting to LiveKit…"}
+                {status === "connecting" && "Connecting…"}
                 {status === "connected" && (ariaActive ? "Speaking…" : "Listening…")}
                 {status === "ended" && "Call ended"}
               </div>
@@ -340,7 +340,7 @@ export default function V2Page() {
           )}
 
           <div style={{ marginTop: "auto", fontSize: 11, color: "#1e293b", textAlign: "center" }}>
-            Powered by LiveKit · Deepgram · Groq · ElevenLabs
+            Powered by Karta AI
           </div>
         </div>
       </div>
