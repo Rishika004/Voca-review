@@ -93,10 +93,10 @@ export default function V2Page() {
 
       // Transcript from LiveKit's built-in transcript system
       // participant=undefined means LOCAL user; participant present means remote (agent)
-      room.on(RoomEvent.TranscriptReceived, (segments: any[], participant?: RemoteParticipant) => {
+      room.on(RoomEvent.TranscriptionReceived, (segments, participant) => {
         for (const seg of segments) {
           if (seg.final && seg.text?.trim()) {
-            const isAgent = !!participant;
+            const isAgent = !!participant && participant.identity !== room.localParticipant.identity;
             const speaker = isAgent ? "Aria" : "You";
             const sentiment = speaker === "You" ? "Neutral" : "";
             setTranscript((prev) => {
