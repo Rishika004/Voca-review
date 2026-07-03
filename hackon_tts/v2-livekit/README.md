@@ -20,7 +20,6 @@ ELEVEN_LABS_VOICE_ID=EXAVITQu4vr4xnSDxMaL
 GMAIL_USER=your-email@gmail.com
 GMAIL_APP_PASSWORD=your-gmail-app-password
 NOTIFY_EMAIL=your-email@gmail.com
-MEET_LINK=https://meet.google.com/byn-mezv-ddv
 ```
 
 ### 3. Install & run backend (2 terminals)

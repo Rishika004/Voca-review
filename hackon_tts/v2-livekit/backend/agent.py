@@ -231,6 +231,7 @@ class AriaAgent(Agent):
         if not r.get("ok"):
             return f"Couldn't understand the time. Ask the lead to rephrase it."
         self._state["meeting_time"] = r["pretty"]
+        self._state["meet_link"] = r.get("meet_link", "")
         self._publish_meta()
         lead_email = self._state["lead_email"]
         if lead_email not in _email_sent:
@@ -279,6 +280,7 @@ class AriaAgent(Agent):
                 lead_email=self._state["lead_email"],
                 meeting_time=self._state["meeting_time"],
                 notify_email=NOTIFY_EMAIL,
+                meet_link=self._state.get("meet_link", ""),
             )
             logger.info("Meeting confirmation email sent")
         except Exception as e:
