@@ -1,0 +1,14 @@
+fastapi>=0.104.0
+uvicorn[standard]>=0.24.0
+python-dotenv>=1.0.0
+livekit-agents>=1.0.0
+livekit-plugins-deepgram>=1.0.0
+livekit-plugins-elevenlabs>=1.0.0
+livekit-plugins-openai>=1.0.0
+livekit-plugins-rumik-ai
+livekit-api>=1.0.0
+requests>=2.31.0
+beautifulsoup4>=4.12.0
+google-api-python-client>=2.100.0
+google-auth-oauthlib>=1.1.0
+dateparser>=1.2.0
