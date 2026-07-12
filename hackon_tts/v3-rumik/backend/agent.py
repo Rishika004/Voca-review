@@ -336,8 +336,9 @@ async def entrypoint(ctx: JobContext):
     session = AgentSession(
         stt=deepgram.STT(
             api_key=os.getenv("DEEPGRAM_API_KEY"),
-            model="nova-2",
-            # "multi" = code-switching mode: understands Hindi + English in the same sentence
+            # nova-3 is Deepgram's model built for multilingual STREAMING;
+            # "multi" on nova-2 streams poorly (missed speech)
+            model=os.getenv("STT_MODEL", "nova-3"),
             language=os.getenv("STT_LANGUAGE", "multi"),
         ),
         llm=lk_openai.LLM(
@@ -361,9 +362,12 @@ async def entrypoint(ctx: JobContext):
             if os.getenv("TTS_PROVIDER") == "deepgram"
             else rumik_ai.TTS(
                 model=os.getenv("RUMIK_MODEL", "mulberry"),
-                description=os.getenv(
-                    "RUMIK_VOICE_DESCRIPTION",
-                    "a female late-20s indian voice, warm and friendly, natural hinglish, conversational pacing like a helpful mentor",
+                # preset speaker = lower latency (no per-request voice conditioning);
+                # set RUMIK_VOICE_DESCRIPTION to use a described voice instead
+                **(
+                    {"description": os.getenv("RUMIK_VOICE_DESCRIPTION")}
+                    if os.getenv("RUMIK_VOICE_DESCRIPTION")
+                    else {"speaker": os.getenv("RUMIK_SPEAKER", "speaker_1")}
                 ),
                 api_key=os.getenv("RUMIK_API_KEY"),
             )
