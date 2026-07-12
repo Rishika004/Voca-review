@@ -86,7 +86,7 @@ export default function V3Page() {
               if (last?.text === msg.text && last?.speaker === msg.speaker) return prev;
               return [...prev, { speaker: msg.speaker, text: msg.text, sentiment: "" }];
             });
-            if (msg.speaker === "Aria") { setAriaActive(true); setTimeout(() => setAriaActive(false), 2000); }
+            if (msg.speaker === "Meera") { setAriaActive(true); setTimeout(() => setAriaActive(false), 2000); }
           }
         } catch {}
       });
@@ -97,7 +97,7 @@ export default function V3Page() {
         for (const seg of segments) {
           if (seg.final && seg.text?.trim()) {
             const isAgent = !!participant && participant.identity !== room.localParticipant.identity;
-            const speaker = isAgent ? "Aria" : "You";
+            const speaker = isAgent ? "Meera" : "You";
             const sentiment = speaker === "You" ? "Neutral" : "";
             setTranscript((prev) => {
               // Avoid duplicate final segments
@@ -182,7 +182,7 @@ export default function V3Page() {
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
           <div style={{ width: 34, height: 34, borderRadius: "50%", background: "linear-gradient(135deg,#6366f1,#8b5cf6)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: 16 }}>K</div>
           <div>
-            <div style={{ fontWeight: 700, fontSize: 16, color: "#fff" }}>Aria <span style={{ color: "#6366f1", fontSize: 12, fontWeight: 400 }}>v3 · Hinglish</span></div>
+            <div style={{ fontWeight: 700, fontSize: 16, color: "#fff" }}>Meera <span style={{ color: "#6366f1", fontSize: 12, fontWeight: 400 }}>v3 · Hinglish</span></div>
             <div style={{ fontSize: 11, color: "#475569" }}>Karta AI Sales Agent</div>
           </div>
         </div>
@@ -213,7 +213,7 @@ export default function V3Page() {
               transition: "box-shadow 0.3s ease",
             }}>A</div>
             <div style={{ textAlign: "center" }}>
-              <div style={{ fontWeight: 700, fontSize: 18, color: "#fff" }}>Aria</div>
+              <div style={{ fontWeight: 700, fontSize: 18, color: "#fff" }}>Meera</div>
               <div style={{ fontSize: 13, color: "#64748b", marginTop: 4 }}>
                 {status === "idle" && "Ready to connect"}
                 {status === "connecting" && "Connecting…"}
@@ -235,21 +235,21 @@ export default function V3Page() {
           <div style={{ flex: 1, background: "#12121e", border: "1px solid #1e1e35", borderRadius: 16, padding: 20, overflowY: "auto", display: "flex", flexDirection: "column", gap: 12 }}>
             {transcript.length === 0 ? (
               <div style={{ color: "#334155", fontSize: 14, textAlign: "center", marginTop: 40 }}>
-                {status === "idle" ? "Click Start Call to connect with Aria" : "Waiting for conversation…"}
+                {status === "idle" ? "Click Start Call to connect with Meera" : "Waiting for conversation…"}
               </div>
             ) : (
               transcript.map((t, i) => (
                 <div key={i} style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
                   <div style={{
                     width: 28, height: 28, borderRadius: "50%", flexShrink: 0,
-                    background: t.speaker === "Aria" ? "linear-gradient(135deg,#6366f1,#8b5cf6)" : "#1e293b",
+                    background: t.speaker === "Meera" ? "linear-gradient(135deg,#6366f1,#8b5cf6)" : "#1e293b",
                     display: "flex", alignItems: "center", justifyContent: "center",
                     fontSize: 11, fontWeight: 700, color: "#fff",
-                  }}>{t.speaker === "Aria" ? "A" : "Y"}</div>
+                  }}>{t.speaker === "Meera" ? "A" : "Y"}</div>
                   <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: 11, color: t.speaker === "Aria" ? "#818cf8" : "#60a5fa", fontWeight: 600, marginBottom: 3 }}>
+                    <div style={{ fontSize: 11, color: t.speaker === "Meera" ? "#818cf8" : "#60a5fa", fontWeight: 600, marginBottom: 3 }}>
                       {t.speaker}
-                      {t.sentiment && t.speaker !== "Aria" && (
+                      {t.sentiment && t.speaker !== "Meera" && (
                         <span style={{ color: SENTIMENT_COLOR[t.sentiment], marginLeft: 8, fontSize: 10 }}>
                           {SENTIMENT_EMOJI[t.sentiment]} {t.sentiment}
                         </span>

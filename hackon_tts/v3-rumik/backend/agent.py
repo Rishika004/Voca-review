@@ -1,5 +1,5 @@
 """
-Aria v3 — LiveKit Voice Agent with Rumik Silk TTS (Hinglish voice)
+Meera v3 — LiveKit Voice Agent with Rumik Silk TTS (Hinglish voice)
 """
 import asyncio
 import json
@@ -37,7 +37,7 @@ logger = logging.getLogger("aria-v3")
 
 NOTIFY_EMAIL = os.getenv("NOTIFY_EMAIL", "rishikathakur607@gmail.com")
 
-# Which company Aria sells for — set COMPANY=superkalam in .env to switch
+# Which company Meera sells for — set COMPANY=superkalam in .env to switch
 COMPANY_PROFILES = {
     "karta": {
         "name": "Karta",
@@ -70,7 +70,7 @@ COMPANY_CONTEXT = COMPANY["knowledge_fn"]()[:5000]  # cap to keep per-turn token
 def build_system_prompt() -> str:
     from datetime import datetime
     now = datetime.now()
-    return f"""You are Aria, an AI sales agent for {COMPANY["name"]}, on a live PHONE CALL.
+    return f"""You are Meera, an AI sales agent for {COMPANY["name"]}, on a live PHONE CALL.
 {COMPANY["audience_note"]}
 
 Current date & time: {now.strftime("%A, %B %d, %Y, %I:%M %p")} (IST, Asia/Kolkata). Use this when proposing days/times — never propose a day that doesn't make sense from today.
@@ -92,7 +92,7 @@ Current date & time: {now.strftime("%A, %B %d, %Y, %I:%M %p")} (IST, Asia/Kolkat
 - Keep technical/product terms in English (demo, email, Mains evaluation, MCQ)
 
 == VOICE OUTPUT (your words are spoken aloud by TTS) ==
-- Plain conversational sentences ONLY: no lists, no markdown, no emojis, no headings, no "Aria:" prefixes
+- Plain conversational sentences ONLY: no lists, no markdown, no emojis, no headings, no "Meera:" prefixes
 - Say URLs naturally: "{COMPANY["website_spoken"]}". Say times naturally: "eleven thirty A M"
 - Never output stage directions like *laughs* or [pause]
 
@@ -123,7 +123,7 @@ Step 0 — Permission (your opening line already asked "do you have a quick minu
 Step 1 — Pain discovery: Ask the pain question: "{COMPANY["pain_question"]}" (conversationally — flow from Step 0, don't interrogate).
   • They say "none / all good" → "That's great to hear! {COMPANY["no_pain_pivot"]}"
   • They give a vague answer → ask ONE clarifying follow-up, then move on regardless.
-  • They ask "who is this / is this a robot?" → "I'm Aria, part of the team at {COMPANY["name"]}!" and continue naturally.
+  • They ask "who is this / is this a robot?" → "I'm Meera, part of the team at {COMPANY["name"]}!" and continue naturally.
 
 Step 2 — Empathize: One short empathetic line + at most ONE follow-up question. Then move on.
 
@@ -180,9 +180,9 @@ Step 7 — Close: "Perfect! I've booked [day] at [time]. We'll send the invite t
 """
 
 
-SYSTEM_PROMPT = None  # built per-call in AriaAgent so the date/time is always current
+SYSTEM_PROMPT = None  # built per-call in MeeraAgent so the date/time is always current
 
-GREETING = f"Hello hi! Main Aria bol rahi hoon {COMPANY['name']} se — kya aapke paas ek minute hai?"
+GREETING = f"Hello hi! Main Meera bol rahi hoon {COMPANY['name']} se — kya aapke paas ek minute hai?"
 
 _email_sent: set = set()
 
@@ -203,7 +203,7 @@ def _msg_text(message) -> str:
     return str(content)
 
 
-class AriaAgent(Agent):
+class MeeraAgent(Agent):
     def __init__(self, state: dict, ctx: JobContext):
         super().__init__(instructions=build_system_prompt())
         self._state = state
@@ -279,7 +279,7 @@ class AriaAgent(Agent):
         try:
             text = _msg_text(message)
             if text.strip():
-                payload = json.dumps({"type": "transcript", "speaker": "Aria", "text": text})
+                payload = json.dumps({"type": "transcript", "speaker": "Meera", "text": text})
                 await self._ctx.room.local_participant.publish_data(payload.encode(), reliable=True)
         except Exception as e:
             logger.warning(f"Could not publish agent transcript: {e}")
@@ -323,7 +323,7 @@ class AriaAgent(Agent):
 
 
 async def entrypoint(ctx: JobContext):
-    logger.info(f"Aria joining room: {ctx.room.name}")
+    logger.info(f"Meera joining room: {ctx.room.name}")
     await ctx.connect(auto_subscribe=AutoSubscribe.AUDIO_ONLY)
 
     state = {
@@ -378,7 +378,7 @@ async def entrypoint(ctx: JobContext):
     )
 
     await session.start(
-        agent=AriaAgent(state, ctx),
+        agent=MeeraAgent(state, ctx),
         room=ctx.room,
         room_input_options=RoomInputOptions(),
     )
